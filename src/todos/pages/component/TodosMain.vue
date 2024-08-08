@@ -1,28 +1,24 @@
 <template>
-
-    <input  class="form-control"
+    <router-view/>
+    <div class="container">
+        <h2>Todos Page</h2>
+        <input  class="form-control"
                 type="text"
                 v-model="searchTxt"
                 placeholder="Search..."
                 />
+        <TodoForm @add-todo="addTodo"/>
 
-    
-                
-    <TodoForm @add-todo="addTodo"/>
-
-    <TodoList   :todos="filteredTodos"
-                @toggle-todo="toggleTodo"
-                @delete-todo="onDelete"/>
-    
-
-    
+        <TodoList   :todos="filteredTodos"
+                    @toggle-todo="toggleTodo"
+                    @delete-todo="onDelete"/>
+    </div>
 </template>
 
 <script>
-
 import {ref, computed} from 'vue';
-import TodoForm from './components/todo/TodoForm.vue';
-import TodoList from './components/todo/TodoList.vue';
+import TodoForm from '@/components/todo/TodoForm.vue';
+import TodoList from '@/components/todo/TodoList.vue';
 import axios from 'axios';
 
 export default {
@@ -156,6 +152,7 @@ export default {
 
     }
 }
+
 </script>
 
 <style>
