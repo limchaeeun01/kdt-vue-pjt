@@ -24,6 +24,7 @@
                 </button>
             </div>
         </div>
+
     </div>
 </template>
 
@@ -39,6 +40,8 @@ export default {
     emits : ['toggle-todo', 'delete-todo'],
     setup(props, context){
         const router = useRouter();
+
+
         const moveToView = (todoId) => {
             router.push(`/todos/${todoId}`);
         }
@@ -49,11 +52,14 @@ export default {
         }
 
         const toggleTodo = (index) => {
-            context.emit('toggle-todo', index)
+            context.emit('toggle-todo', index);
         }
+
         const onDelete = (index) => {
             context.emit('delete-todo', index);
         }
+
+
 
         return{
             todoStyle,

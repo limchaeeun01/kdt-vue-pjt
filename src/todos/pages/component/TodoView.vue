@@ -33,11 +33,15 @@
             </div>
 
             <button class="btn btn-outline-dark" 
-                    type="submit">Update</button>
+                    type="submit"
+                    :disabled="!todoUpdated">Update</button>
             <button class="btn btn-outline-danger ml-2"
                     @click="moveToTodos()">Cancle</button>
             
         </form>
+        <Alert  v-if="showAlert"
+                :message="alertMsg"
+                :type="alertType"/>
     </div>
     
 </template>
@@ -46,33 +50,69 @@
 
 
 import { useRoute } from 'vue-router';
-import { ref } from 'vue';
-import axios from 'axios';
+import { computed, ref } from 'vue';
+import axios from '@/axios';
 import { useRouter } from 'vue-router';
+import _ from 'lodash';
+import Alert from '@/components/alert/AlertComponent.vue';
+import { useToast } from '@/composables/toast';
 export default {
+    components : {
+        Alert,
+    },
     setup(){
         const route = useRoute();
         const router = useRouter();
+
 
         console.log("debug >>> TodoView param, ", route.params);
         console.log("debug >>> TodoView param, ", route.params.id);
 
         const loading = ref(true);
         const todo = ref(null);
+        const originalTodo = ref(null);
+
+        const {
+            showAlert, alertMsg, alertType, triggerAlert
+        } = useToast();
+
+        // const showAlert = ref(false);
+        // const alertMsg = ref('');
+        // const alertType = ref('');
+
+        // const triggerAlert = (message, type = 'success') => {
+        //     showAlert.value = true;
+        //     alertMsg.value = message;
+        //     alertType.value = type;
+        //     setTimeout( () =>{
+        //         showAlert.value = false;
+        //         alertMsg.value = '';
+        //         alertType.value = '';
+        //     }, 5000);
+        // }
+
+        const todoUpdated = computed(() => {
+            return !_.isEqual(todo.value, originalTodo.value);
+        });
 
 
         const moveToTodos = () => {
-            router.push(`/todos`);
+            router.push({
+                name : 'Todos'
+            });
         }
 
         const getTodos = async () => {
             try {
-                const response = await axios.get(`http://localhost:3000/todos/${route.params.id}`);
+                const response = await axios.get(`todos/${route.params.id}`);
                 console.log(response.data);
-                todo.value = response.data;
+                todo.value = {...response.data};
+                originalTodo.value = {...response.data};
                 loading.value = false;
+                triggerAlert('Successfully get Todo....');
             } catch (err) {
                 console.log(err);
+                triggerAlert('Something went wrong....', 'danger');
             }
         }
         getTodos();
@@ -83,13 +123,15 @@ export default {
 
         const onUpdate = async() => {
             try {
-                await axios.patch(`http://localhost:3000/todos/${todo.value.id}`, {
+                await axios.patch(`todos/${todo.value.id}`, {
                 subject : todo.value.subject,
                 completed : todo.value.completed
                 });
                 moveToTodos();
+                triggerAlert('Successfully updated....');
             } catch (err) {
                 console.log(err);
+                triggerAlert('Something went wrong....', 'danger');
             }
 
         }
@@ -100,7 +142,12 @@ export default {
             getTodos,
             moveToTodos,
             toggleState,
-            onUpdate
+            onUpdate,
+            originalTodo,
+            todoUpdated,
+            showAlert,
+            alertMsg,
+            alertType
         }
     }
 }
